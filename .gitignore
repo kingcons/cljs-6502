@@ -2,6 +2,8 @@
 /lib
 /classes
 /checkouts
+/out
+/repl
 pom.xml
 *.jar
 *.class
