@@ -9,12 +9,11 @@ involved than for Clojure. Try the following:
 
 ```
 git clone git://github.com/redline6561/cljs-6502/;
-cd cljs-6502;
-lein cljsbuild once && lein ring server 8080
+cd cljs-6502 && lein repl
 ```
+Once the repl is running, connect to it with your client of choice and
+run `(cemerick.piggieback/cljs-repl)`.
 
-Then visit `localhost:8080/test.html` in your browser and in a new
-terminal run `lein trampoline cljsbuild repl-listen`.
 
 ## Usage
 
