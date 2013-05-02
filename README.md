@@ -1,6 +1,6 @@
 # cljs-6502
 
-A Clojurescript port of [cl-6502](https://github.com/redline6561/cl-6502).
+A work-in-progress Clojurescript port of [cl-6502](https://github.com/redline6561/cl-6502).
 
 ## Quickstart
 
