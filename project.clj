@@ -6,6 +6,7 @@
                  [com.cemerick/piggieback "0.0.4"]]
   :plugins [[lein-cljsbuild "0.3.0"]]
   :repl-options {:nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}
+  :source-paths ["src/clj"]
   :cljsbuild {:builds [{:source-paths ["src/cljs"]
                         :compiler {:libs ["goog/dom/query.js"]
                                    :pretty-print true
