@@ -11,4 +11,4 @@
                         :compiler {:libs ["goog/dom/query.js"]
                                    :pretty-print true
                                    :output-dir ".cljsbuild/6502"
-                                   :output-to "public/6502.js"}}]})
+                                   :output-to "resources/public/6502.js"}}]})

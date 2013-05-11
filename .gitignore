@@ -4,6 +4,7 @@
 /checkouts
 /out
 /repl
+/.repl
 pom.xml
 *.jar
 *.class
