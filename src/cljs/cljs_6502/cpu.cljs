@@ -106,7 +106,7 @@ START is provided, test that against ADDRESS. Otherwise, use absolute address."
 (defn status-bit
   "Retrieve the bit corresponding to keyword NAME from the CPU status register."
   [name]
-  (bit-test (:sr @cpu) (%status-bit name)))
+  (bit-and (:sr @cpu) (Math/pow 2 (%status-bit name))))
 
 (defn set-status-bit
   "Set the bit corresponding to NAME from the CPU status register to VALUE."
