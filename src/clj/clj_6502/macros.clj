@@ -36,10 +36,10 @@ desired for disassembly of the mode."
        (deftype ~name [])
        (extend-protocol cljs-6502.addressing/AddressingMode
          ~name
-         (getter [mode#] ~getter)
-         (setter [mode#] ~setter)
-         (reader [mode#] ~reader)
-         (writer [mode#] ~writer)))))
+         (~'getter [mode#] ~getter)
+         (~'setter [mode#] ~setter)
+         (~'reader [mode#] ~reader)
+         (~'writer [mode#] ~writer)))))
 
 (defmacro defopcode
   "Define an Opcode: a method NAME that takes an OPCODE and AdressingMode,
