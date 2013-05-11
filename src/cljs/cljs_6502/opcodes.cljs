@@ -1,4 +1,5 @@
 (ns cljs-6502.opcodes
+  (:refer-clojure :exclude [inc dec])
   (:use-macros [clj-6502.macros :only [defasm branch-if]])
   (:use [cljs-6502.addressing :only [Implied Immediate Accumulator
                                      ZeroPage ZeroPageX ZeroPageY
@@ -84,7 +85,7 @@
 
 (defasm brk {:docs "Force Break"}
     [[0x00 7 1 Implied]]
-  (let [pc (wrap-word (inc (get-register :pc)))]
+  (let [pc (wrap-word (+ 1 (get-register :pc)))]
     (stack-push-word pc)
     (set-status-bit :break 1)
     (stack-push (get-register :sr))
@@ -149,18 +150,18 @@
      [0xce 6 3 Absolute]
      [0xd6 6 2 ZeroPageX]
      [0xde 7 3 AbsoluteX]]
-  (let [result (wrap-byte (dec ((getter mode))))]
+  (let [result (wrap-byte (- ((getter mode)) 1))]
     ((setter mode) result)
     (set-flags-nz result)))
 
 (defasm dex {:docs "Decrement X register"}
     [[0xca 2 1 Implied]]
-  (let [result (set-register :xr (wrap-byte (dec (get-register :xr))))]
+  (let [result (set-register :xr (wrap-byte (- (get-register :xr) 1)))]
     (set-flags-nz result)))
 
 (defasm dey {:docs "Decrement Y register"}
     [[0x88 2 1 Implied]]
-  (let [result (set-register :yr (wrap-byte (dec (get-register :yr))))]
+  (let [result (set-register :yr (wrap-byte (- (get-register :yr) 1)))]
     (set-flags-nz result)))
 
 (defasm eor {:docs "Exclusive OR with Accumulator"}
@@ -180,28 +181,28 @@
      [0xee 6 3 Absolute]
      [0xf6 6 2 ZeroPageX]
      [0xfe 7 3 AbsoluteX]]
-  (let [result (wrap-byte (inc ((getter mode))))]
+  (let [result (wrap-byte (+ 1 ((getter mode))))]
     ((setter mode) result)
     (set-flags-nz result)))
 
 (defasm inx {:docs "Increment X register"}
     [[0xe8 2 1 Implied]]
-  (let [result (set-register :xr (wrap-byte (inc (get-register :xr))))]
+  (let [result (set-register :xr (wrap-byte (+ 1 (get-register :xr))))]
     (set-flags-nz result)))
 
 (defasm iny {:docs "Increment Y register"}
     [[0xc8 2 1 Implied]]
-  (let [result (set-register :yr (wrap-byte (inc (get-register :yr))))]
+  (let [result (set-register :yr (wrap-byte (+ 1 (get-register :yr))))]
     (set-flags-nz result)))
 
 (defasm jmp {:docs "Jump Unconditionally" :addr-style :raw :track-pc nil}
     [[0x4c 3 3 Absolute]
-     [0x6c 5 3 indirect]]
+     [0x6c 5 3 Indirect]]
   (set-register :pc ((getter mode))))
 
 (defasm jsr {:docs "Jump to Subroutine" :addr-style :raw :track-pc nil}
     [[0x20 6 3 Absolute]]
-  (stack-push-word (wrap-word (inc (get-register :pc))))
+  (stack-push-word (wrap-word (+ 1 (get-register :pc))))
   (set-register :pc ((getter mode))))
 
 (defasm lda {:docs "Load Accumulator from Memory"}
@@ -311,7 +312,7 @@
 
 (defasm rts {:docs "Return from Subroutine" :track-pc nil}
     [[0x60 6 1 Implied]]
-  (set-register :pc (inc (stack-pop-word))))
+  (set-register :pc (+ 1 (stack-pop-word))))
 
 ; TODO: Add support for Decimal mode. (not supported on NES)
 (defasm sbc {:docs "Subtract from Accumulator with Carry"}
