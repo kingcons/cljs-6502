@@ -1,6 +1,6 @@
 (ns cljs-6502.addressing
-  (:use [cljs-6502.cpu :only [cpu get-byte get-word
-                              wrap-byte wrap-word
+  (:use [cljs-6502.cpu :only [cpu get-register set-register
+                              get-byte get-word wrap-byte wrap-word
                               maybe-update-cycle-count]])
   (:use-macros [clj-6502.macros :only [defaddress]]))
 
@@ -17,12 +17,14 @@
 
 (defaddress Accumulator
   {:reader #"^[aA]$"
-   :writer "A"}
+   :writer "A"
+   :cpu-reg t}
   :ar)
 
 (defaddress Immediate
   {:reader #"^#\\$[0-9a-fA-F]{2}$"
-   :writer "#$%02x"}
+   :writer "#$%02x"
+   :cpu-reg t}
   :pc)
 
 (defaddress ZeroPage
