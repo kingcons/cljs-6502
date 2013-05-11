@@ -52,13 +52,13 @@
    :writer "$%02x%02x, X"}
   ;; TODO: Either have M-U-C-C return result or use a threading macro.
   (let [result (wrap-word (+ (get-word (:pc @cpu)) (:xr @cpu)))]
-    (maybe-update-cycle-count result)))
+    (maybe-update-cycle-count result nil)))
 
 (defaddress AbsoluteY
   {:reader #"^\\$[0-9a-fA-F]{4},[yY]$"
    :writer "$%02x%02x, Y"}
   (let [result (wrap-word (+ (get-word (:pc @cpu)) (:yr @cpu)))]
-    (maybe-update-cycle-count result)))
+    (maybe-update-cycle-count result nil)))
 
 (defaddress Indirect
   {:reader #"^\\(\\$[0-9a-fA-F]{4}\\)$"
@@ -68,14 +68,14 @@
 (defaddress IndirectX
   {:reader #"^\\(\\$[0-9a-fA-F]{2}\\),[xX]$"
    :writer "($%02x), X"}
-  (get-word (wrap-byte (+ (get-byte (:pc @cpu) (:xr @cpu)))) t))
+  (get-word (wrap-byte (+ (get-byte (:pc @cpu)) (:xr @cpu))) t))
 
 (defaddress IndirectY
   {:reader #"^\\(\\$[0-9a-fA-F]{2}\\),[yY]$"
    :writer "($%02x), Y"}
   (let [addr (get-word (get-byte (:pc @cpu)) t)
         result (wrap-word (+ addr (:yr @cpu)))]
-    (maybe-update-cycle-count result)))
+    (maybe-update-cycle-count result nil)))
 
 (defaddress Relative
   {:reader #"^&[0-9a-fA-F]{2}$"

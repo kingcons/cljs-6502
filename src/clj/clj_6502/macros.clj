@@ -53,7 +53,7 @@ executes BODY, and updates the cpu's program counter and cycle count."
            `((swap! cljs-6502.cpu/cpu update-in [:pc]
                     (fn [x] (+ x ~(dec bytes))))))
        (swap! cljs-6502.cpu/cpu update-in [:cc]
-              (fn [x] (+ x ~cycles))))))
+              (fn [x#] (+ x# ~cycles))))))
 
 (defmacro defasm
   "Define an Assembly Mnemonic: a multimethod NAME with specializations
@@ -62,12 +62,12 @@ of :raw, :mixed, or nil. TRACK-PC can be passed nil to short-circuit
 PC incrementing for opcodes that modify the PC."
   [name {:keys [docs addr-style track-pc]} modes & body]
   `(do
-     (doseq [[op# cycles# bytes# mode#] ~modes]
-       (swap! cljs-6502.cpu/opcodes update-in [op#]
-              (fn [x] [~name cycles# bytes# mode#])))
      (defmulti ~name ~docs (fn [~'opcode ~'mode] ~'opcode))
      ~@(for [mode# modes]
          `(defopcode ~name {:mode ~mode#
                             :track-pc ~track-pc}
             (swap! cljs-6502.cpu/cpu update-in [:pc] inc)
-            ~@body))))
+            ~@body))
+     (doseq [[op# cycles# bytes# mode#] ~modes]
+       (swap! cljs-6502.cpu/opcodes update-in [op#]
+              (fn [x#] [~name cycles# bytes# (new mode#)])))))
