@@ -19,17 +19,6 @@
 (def opcodes "A mapping of opcodes to instruction metadata vectors."
   (atom (vec (repeat 0x100 [nil nil nil nil]))))
 
-(extend-protocol Resettable
-  CPU
-  (reset [obj] (swap! cpu (fn [x] (make-cpu)))))
-
-(defn nmi
-  "Generate a non-maskable interrupt. Used for vblanking in NES."
-  []
-  (stack-push-word (:pc @cpu))
-  (stack-push (:sr @cpu))
-  (set-register :pc (get-word 0xfffa)))
-
 (defn get-register
   "Get the value of REGISTER."
   [register]
@@ -154,3 +143,14 @@ It will set each flag to 1 if its predicate is true, otherwise 0."
      (not (pos? (status-bit :carry))) result
      (= 01 count) (bit-or result 0x01)
      (= -1 count) (bit-or result 0x80))))
+
+(defn nmi
+  "Generate a non-maskable interrupt. Used for vblanking in NES."
+  []
+  (stack-push-word (:pc @cpu))
+  (stack-push (:sr @cpu))
+  (set-register :pc (get-word 0xfffa)))
+
+(extend-protocol Resettable
+  CPU
+  (reset [obj] (swap! cpu (fn [x] (make-cpu)))))
