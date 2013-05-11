@@ -9,8 +9,8 @@
         [cljs-6502.cpu :only [get-register set-register get-byte set-byte
                               get-word wrap-byte wrap-word rotate-byte
                               stack-push stack-pop stack-push-word stack-pop-word
-                              status-bit set-status-bit set-flags-if
-                              set-flags-nz overflow?]]))
+                              status-bit set-status-bit set-flags-if set-flags-nz
+                              overflow?]]))
 
 (defasm adc {:docs "Add to Accumulator with Carry"}
     [[0x61 6 2 IndirectX]

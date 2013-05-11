@@ -2,6 +2,8 @@
 
 A work-in-progress Clojurescript port of [cl-6502](https://github.com/redline6561/cl-6502).
 
+The Core API and opcodes are implemented though AddressingMode bugs remain. The assembler and disassembler will be added later.
+
 ## Quickstart
 
 Getting a REPL for a simple project going with Clojurescript is more
@@ -13,7 +15,6 @@ cd cljs-6502 && lein repl
 ```
 Once the repl is running, connect to it with your client of choice and
 run `(cemerick.piggieback/cljs-repl)`.
-
 
 ## Usage
 

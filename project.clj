@@ -1,4 +1,4 @@
-(defproject cljs-6502 "0.1.0-SNAPSHOT"
+(defproject cljs-6502 "0.1.0"
   :description "A 6502 Emulator, Assembler, and Disassembler in pure Clojurescript."
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
