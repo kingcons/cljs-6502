@@ -7,8 +7,8 @@
                                      Indirect IndirectX IndirectY
                                      Relative getter setter]]
         [cljs-6502.cpu :only [get-register set-register get-byte set-byte
-                              wrap-byte wrap-word stack-push stack-pop
-                              stack-push-word stack-pop-word rotate-byte
+                              get-word wrap-byte wrap-word rotate-byte
+                              stack-push stack-pop stack-push-word stack-pop-word
                               status-bit set-status-bit set-flags-if
                               set-flags-nz overflow?]]))
 
@@ -46,10 +46,10 @@
      [0x0e 6 3 Absolute]
      [0x16 6 2 ZeroPageX]
      [0x1e 7 3 AbsoluteX]]
-  (set-flags-if cpu :carry (logbitp 7 (funcall mode cpu)))
-  (let [result (wrap-byte (ash (funcall mode cpu) 1))]
-    (set-flags-nz cpu result)
-    (funcall setf-form result)))
+  (set-flags-if :carry #(bit-test ((getter mode)) 7))
+  (let [result (wrap-byte (bit-shift-left ((getter mode)) 1))]
+    (set-flags-nz result)
+    ((setter mode) result)))
 
 (defasm bcc {:docs "Branch on Carry Clear" :track-pc nil}
     [[0x90 2 2 Relative]]
