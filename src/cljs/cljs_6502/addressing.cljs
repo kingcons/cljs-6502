@@ -5,8 +5,8 @@
   (:use-macros [clj-6502.macros :only [defaddress]]))
 
 (defprotocol AddressingMode
-  (getter [mode] "Return a fn that gets the value at MODE for CPU.")
-  (setter [mode] "Return a fn that sets the value at MODE for CPU.")
+  (getter [mode raw?] "Get the value at MODE or the address if RAW? is non-nil.")
+  (setter [mode val]  "Set the value at MODE to VAL.")
   (reader [mode] "Return a Regular Expression for parsing MODE.")
   (writer [mode] "Return a Format Expression for printing MODE."))
 
