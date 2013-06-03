@@ -129,10 +129,10 @@ It will set each flag to 1 if its predicate is true, otherwise 0."
   (set-flags-if :zero #(zero? value) :negative #(bit-test value 7)))
 
 (defn overflow?
-  "Checks whether the sign of RESULT is found in the signs of the ARGS."
-  [result & args]
-  (let [signs (apply hash-set (map #(bit-test * 7) args))]
-    (not (contains? signs (bit-test result 7)))))
+  "Checks whether the sign of RESULT is found in the signs of REG or MEM."
+  [result reg mem]
+  (not (or (= (bit-test result 7) (bit-test reg 7))
+           (= (bit-test result 7) (bit-test mem 7)))))
 
 (defn rotate-byte
   "Rotate the bits of INTEGER by COUNT. If COUNT is negative, rotate right."
