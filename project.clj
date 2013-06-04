@@ -3,8 +3,10 @@
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.4.0"]
-                 [com.cemerick/piggieback "0.0.4"]]
-  :plugins [[lein-cljsbuild "0.3.0"]]
+                 [com.cemerick/piggieback "0.0.4"]
+                 [com.cemerick/clojurescript.test "0.0.4"]]
+  :plugins [[lein-cljsbuild "0.3.0"]
+            [lein-marginalia "0.7.1"]]
   :repl-options {:nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}
   :source-paths ["src/clj"]
   :cljsbuild {:builds [{:source-paths ["src/cljs"]
