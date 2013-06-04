@@ -198,12 +198,12 @@
   (let [result (set-register :yr (wrap-byte (+ 1 (get-register :yr))))]
     (set-flags-nz result)))
 
-(defasm jmp {:docs "Jump Unconditionally" :raw? t :track-pc? nil}
+(defasm jmp {:docs "Jump Unconditionally" :raw? true :track-pc? nil}
     [[0x4c 3 3 Absolute]
      [0x6c 5 3 Indirect]]
   (set-register :pc (getter mode raw?)))
 
-(defasm jsr {:docs "Jump to Subroutine" :raw? t :track-pc? nil}
+(defasm jsr {:docs "Jump to Subroutine" :raw? true :track-pc? nil}
     [[0x20 6 3 Absolute]]
   (stack-push-word (wrap-word (+ 1 (get-register :pc))))
   (set-register :pc (getter mode raw?)))
@@ -350,7 +350,7 @@
     [[0x78 2 1 Implied]]
   (set-status-bit :interrupt 1))
 
-(defasm sta {:docs "Store Accumulator" :raw? t}
+(defasm sta {:docs "Store Accumulator" :raw? true}
     [[0x81 6 2 IndirectX]
      [0x85 3 2 ZeroPage]
      [0x8d 4 3 Absolute]
@@ -360,13 +360,13 @@
      [0x9d 5 3 AbsoluteX]]
   (setter mode (get-register :ar)))
 
-(defasm stx {:docs "Store X register" :raw? t}
+(defasm stx {:docs "Store X register" :raw? true}
     [[0x86 3 2 ZeroPage]
      [0x8e 4 3 Absolute]
      [0x96 4 2 ZeroPageY]]
   (setter mode (get-register :xr)))
 
-(defasm sty {:docs "Store Y register" :raw? t}
+(defasm sty {:docs "Store Y register" :raw? true}
     [[0x84 3 2 ZeroPage]
      [0x8c 4 3 Absolute]
      [0x94 4 2 ZeroPageX]]
