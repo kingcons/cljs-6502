@@ -1,6 +1,6 @@
 (ns cljs-6502.opcodes
   (:refer-clojure :exclude [and inc dec])
-  (:use-macros [clj-6502.macros :only [defasm branch-if]])
+  (:use-macros [clj-6502.macros :only [defasm branch-if getter-mixed]])
   (:use [cljs-6502.addressing :only [Implied Immediate Accumulator
                                      ZeroPage ZeroPageX ZeroPageY
                                      Absolute AbsoluteX AbsoluteY
@@ -21,9 +21,10 @@
      [0x75 4 2 ZeroPageX]
      [0x79 4 3 AbsoluteY]
      [0x7d 4 3 AbsoluteX]]
-  (let [result (+ (get-register :ar) ((getter mode)) (status-bit :carry))]
+  (let [value (getter mode raw?)
+        result (+ (get-register :ar) value (status-bit :carry))]
     (set-flags-if :carry #(> result 0xff)
-                  :overflow #(overflow? result (get-register :ar) ((getter mode)))
+                  :overflow #(overflow? result (get-register :ar) value)
                   :negative #(bit-test result 7)
                   :zero #(zero? (wrap-byte result)))
     (set-register :ar (wrap-byte result))))
@@ -37,49 +38,51 @@
      [0x35 4 2 ZeroPageX]
      [0x39 4 3 AbsoluteY]
      [0x3d 4 3 AbsoluteX]]
-  (let [result (set-register :ar (bit-and (get-register :ar) ((getter mode))))]
+  (let [value (getter mode raw?)
+        result (set-register :ar (bit-and (get-register :ar) value))]
     (set-flags-nz result)))
 
-(defasm asl {:docs "Arithmetic Shift Left" :addr-style :mixed}
+(defasm asl {:docs "Arithmetic Shift Left"}
     [[0x06 5 2 ZeroPage]
      [0x0a 2 1 Accumulator]
      [0x0e 6 3 Absolute]
      [0x16 6 2 ZeroPageX]
      [0x1e 7 3 AbsoluteX]]
-  (set-flags-if :carry #(bit-test ((getter mode)) 7))
-  (let [result (wrap-byte (bit-shift-left ((getter mode)) 1))]
+  (let [value (getter-mixed)
+        result (wrap-byte (bit-shift-left value 1))]
+    (set-flags-if :carry #(bit-test value 7))
     (set-flags-nz result)
-    ((setter mode) result)))
+    (setter mode result)))
 
-(defasm bcc {:docs "Branch on Carry Clear" :track-pc nil}
+(defasm bcc {:docs "Branch on Carry Clear" :track-pc? nil}
     [[0x90 2 2 Relative]]
   (branch-if #(zero? (status-bit :carry))))
 
-(defasm bcs {:docs "Branch on Carry Set" :track-pc nil}
+(defasm bcs {:docs "Branch on Carry Set" :track-pc? nil}
     [[0xb0 2 2 Relative]]
   (branch-if #(pos? (status-bit :carry))))
 
-(defasm beq {:docs "Branch if Equal" :track-pc nil}
+(defasm beq {:docs "Branch if Equal" :track-pc? nil}
     [[0xf0 2 2 Relative]]
   (branch-if #(pos? (status-bit :zero))))
 
 (defasm bit {:docs "Test Bits in Memory with Accumulator"}
     [[0x24 3 2 ZeroPage]
      [0x2c 4 3 Absolute]]
-  (let [result ((getter mode))]
+  (let [result (getter mode raw?)]
     (set-flags-if :zero #(zero? (bit-and (get-register :ar) result))
                   :negative #(bit-test result 7)
                   :overflow #(bit-test result 6))))
 
-(defasm bmi {:docs "Branch on Negative Result" :track-pc nil}
+(defasm bmi {:docs "Branch on Negative Result" :track-pc? nil}
     [[0x30 2 2 Relative]]
   (branch-if #(pos? (status-bit :negative))))
 
-(defasm bne {:docs "Branch if Not Equal" :track-pc nil}
+(defasm bne {:docs "Branch if Not Equal" :track-pc? nil}
     [[0xd0 2 2 Relative]]
   (branch-if #(zero? (status-bit :zero))))
 
-(defasm bpl {:docs "Branch on Positive Result" :track-pc nil}
+(defasm bpl {:docs "Branch on Positive Result" :track-pc? nil}
     [[0x10 2 2 Relative]]
   (branch-if #(zero? (status-bit :negative))))
 
@@ -92,11 +95,11 @@
     (set-status-bit :interrupt 1)
     (set-register :pc (get-word 0xfffe))))
 
-(defasm bvc {:docs "Branch on Overflow Clear" :track-pc nil}
+(defasm bvc {:docs "Branch on Overflow Clear" :track-pc? nil}
     [[0x50 2 2 Relative]]
   (branch-if #(zero? (status-bit :overflow))))
 
-(defasm bvs {:docs "Branch on Overflow Set" :track-pc nil}
+(defasm bvs {:docs "Branch on Overflow Set" :track-pc? nil}
     [[0x70 2 2 Relative]]
   (branch-if #(pos? (status-bit :overflow))))
 
@@ -125,7 +128,7 @@
      [0xd5 4 2 ZeroPageX]
      [0xd9 4 3 AbsoluteY]
      [0xdd 4 3 AbsoluteX]]
-  (let [result (- (get-register :ar) ((getter mode)))]
+  (let [result (- (get-register :ar) (getter mode raw?))]
     (set-flags-if :carry (not (neg? result)))
     (set-flags-nz result)))
 
@@ -133,7 +136,7 @@
     [[0xe0 2 2 Immediate]
      [0xe4 3 2 ZeroPage]
      [0xec 4 3 Absolute]]
-  (let [result (- (get-register :xr) ((getter mode)))]
+  (let [result (- (get-register :xr) (getter mode raw?))]
     (set-flags-if :carry #(not (neg? result)))
     (set-flags-nz result)))
 
@@ -141,7 +144,7 @@
     [[0xc0 2 2 Immediate]
      [0xc4 3 2 ZeroPage]
      [0xcc 4 3 Absolute]]
-  (let [result (- (get-register :yr) ((getter mode)))]
+  (let [result (- (get-register :yr) (getter mode raw?))]
     (set-flags-if :carry #(not (neg? result)))
     (set-flags-nz result)))
 
@@ -150,8 +153,8 @@
      [0xce 6 3 Absolute]
      [0xd6 6 2 ZeroPageX]
      [0xde 7 3 AbsoluteX]]
-  (let [result (wrap-byte (- ((getter mode)) 1))]
-    ((setter mode) result)
+  (let [result (wrap-byte (- (getter mode raw?) 1))]
+    (setter mode result)
     (set-flags-nz result)))
 
 (defasm dex {:docs "Decrement X register"}
@@ -173,7 +176,7 @@
      [0x55 4 2 ZeroPageX]
      [0x59 4 3 AbsoluteY]
      [0x5d 4 3 AbsoluteX]]
-  (let [result (set-register :ar (bit-xor ((getter mode)) (get-register :ar)))]
+  (let [result (set-register :ar (bit-xor (getter mode raw?) (get-register :ar)))]
     (set-flags-nz result)))
 
 (defasm inc {:docs "Increment Memory"}
@@ -181,8 +184,8 @@
      [0xee 6 3 Absolute]
      [0xf6 6 2 ZeroPageX]
      [0xfe 7 3 AbsoluteX]]
-  (let [result (wrap-byte (+ 1 ((getter mode))))]
-    ((setter mode) result)
+  (let [result (wrap-byte (+ 1 (getter mode raw?)))]
+    (setter mode result)
     (set-flags-nz result)))
 
 (defasm inx {:docs "Increment X register"}
@@ -195,15 +198,15 @@
   (let [result (set-register :yr (wrap-byte (+ 1 (get-register :yr))))]
     (set-flags-nz result)))
 
-(defasm jmp {:docs "Jump Unconditionally" :addr-style :raw :track-pc nil}
+(defasm jmp {:docs "Jump Unconditionally" :raw? t :track-pc? nil}
     [[0x4c 3 3 Absolute]
      [0x6c 5 3 Indirect]]
-  (set-register :pc ((getter mode))))
+  (set-register :pc (getter mode raw?)))
 
-(defasm jsr {:docs "Jump to Subroutine" :addr-style :raw :track-pc nil}
+(defasm jsr {:docs "Jump to Subroutine" :raw? t :track-pc? nil}
     [[0x20 6 3 Absolute]]
   (stack-push-word (wrap-word (+ 1 (get-register :pc))))
-  (set-register :pc ((getter mode))))
+  (set-register :pc (getter mode raw?)))
 
 (defasm lda {:docs "Load Accumulator from Memory"}
     [[0xa1 6 2 IndirectX]
@@ -214,7 +217,7 @@
      [0xb5 4 2 ZeroPageX]
      [0xb9 4 3 AbsoluteY]
      [0xbd 4 3 AbsoluteX]]
-  (let [result (set-register :ar ((getter mode)))]
+  (let [result (set-register :ar (getter mode raw?))]
     (set-flags-nz result)))
 
 (defasm ldx {:docs "Load X register from Memory"}
@@ -223,7 +226,7 @@
      [0xae 4 3 Absolute]
      [0xb6 4 2 ZeroPageY]
      [0xbe 4 3 AbsoluteY]]
-  (let [result (set-register :xr ((getter mode)))]
+  (let [result (set-register :xr (getter mode raw?))]
     (set-flags-nz result)))
 
 (defasm ldy {:docs "Load Y register from Memory"}
@@ -232,18 +235,19 @@
      [0xac 4 3 Absolute]
      [0xbc 4 3 AbsoluteX]
      [0xb4 4 2 ZeroPageX]]
-  (let [result (set-register :yr ((getter mode)))]
+  (let [result (set-register :yr (getter mode raw?))]
     (set-flags-nz result)))
 
-(defasm lsr {:docs "Logical Shift Right" :addr-style :mixed}
+(defasm lsr {:docs "Logical Shift Right"}
     [[0x46 5 2 ZeroPage]
      [0x4a 2 1 Accumulator]
      [0x4e 6 3 Absolute]
      [0x56 6 2 ZeroPageX]
      [0x5e 7 3 AbsoluteX]]
-  (set-flags-if :carry #(bit-test ((getter mode)) 0))
-  (let [result (bit-shift-right ((getter mode)) 1)]
-    ((setter mode) result)
+  (let [value (getter-mixed)
+        result (bit-shift-right value 1)]
+    (set-flags-if :carry #(bit-test value 0))
+    (setter mode result)
     (set-flags-nz result)))
 
 (defasm nop {:docs "No Operation"}
@@ -259,7 +263,7 @@
      [0x15 4 2 ZeroPageX]
      [0x19 4 3 AbsoluteY]
      [0x1d 4 3 AbsoluteX]]
-  (let [result (set-register :ar (bit-or (get-register :ar) ((getter mode))))]
+  (let [result (set-register :ar (bit-or (get-register :ar) (getter mode raw?)))]
     (set-flags-nz result)))
 
 (defasm pha {:docs "Push Accumulator"}
@@ -281,27 +285,27 @@
     (set-register :sr result)
     (set-status-bit :break 0)))
 
-(defasm rol {:docs "Rotate Left" :addr-style :mixed}
+(defasm rol {:docs "Rotate Left"}
     [[0x2a 2 1 Accumulator]
      [0x26 5 2 ZeroPage]
      [0x2e 6 3 Absolute]
      [0x36 6 2 ZeroPageX]
      [0x3e 7 3 AbsoluteX]]
-  (let [value ((getter mode))
+  (let [value (getter-mixed)
         result (wrap-byte (rotate-byte value 1))]
-    ((setter mode) result)
+    (setter mode result)
     (set-flags-if :carry #(bit-test value 7))
     (set-flags-nz result)))
 
-(defasm ror {:docs "Rotate Right" :addr-style :mixed}
+(defasm ror {:docs "Rotate Right"}
     [[0x66 5 2 ZeroPage]
      [0x6a 2 1 Accumulator]
      [0x6e 6 3 Absolute]
      [0x76 6 2 ZeroPageX]
      [0x7e 7 3 AbsoluteX]]
-  (let [value ((getter mode))
+  (let [value (getter-mixed)
         result (wrap-byte (rotate-byte value -1))]
-    ((setter mode) result)
+    (setter mode result)
     (set-flags-if :carry #(bit-test value 0))
     (set-flags-nz result)))
 
@@ -310,7 +314,7 @@
   (set-register :sr (bit-or (stack-pop) 0x20))
   (set-register :pc (stack-pop-word)))
 
-(defasm rts {:docs "Return from Subroutine" :track-pc nil}
+(defasm rts {:docs "Return from Subroutine" :track-pc? nil}
     [[0x60 6 1 Implied]]
   (set-register :pc (+ 1 (stack-pop-word))))
 
@@ -324,7 +328,7 @@
      [0xf5 4 2 ZeroPageX]
      [0xf9 4 3 AbsoluteY]
      [0xfd 4 3 AbsoluteX]]
-  (let [value ((getter mode))
+  (let [value (getter mode raw?)
         result (- (get-register :ar) value
                   (bit-flip (status-bit :carry) 0))]
     (set-flags-if :zero #(zero? (wrap-byte result))
@@ -346,7 +350,7 @@
     [[0x78 2 1 Implied]]
   (set-status-bit :interrupt 1))
 
-(defasm sta {:docs "Store Accumulator" :addr-style :raw}
+(defasm sta {:docs "Store Accumulator" :raw? t}
     [[0x81 6 2 IndirectX]
      [0x85 3 2 ZeroPage]
      [0x8d 4 3 Absolute]
@@ -354,19 +358,19 @@
      [0x95 4 2 ZeroPageX]
      [0x99 5 3 AbsoluteY]
      [0x9d 5 3 AbsoluteX]]
-  ((setter mode) (get-register :ar)))
+  (setter mode (get-register :ar)))
 
-(defasm stx {:docs "Store X register" :addr-style :raw}
+(defasm stx {:docs "Store X register" :raw? t}
     [[0x86 3 2 ZeroPage]
      [0x8e 4 3 Absolute]
      [0x96 4 2 ZeroPageY]]
-  ((setter mode) (get-register :xr)))
+  (setter mode (get-register :xr)))
 
-(defasm sty {:docs "Store Y register" :addr-style :raw}
+(defasm sty {:docs "Store Y register" :raw? t}
     [[0x84 3 2 ZeroPage]
      [0x8c 4 3 Absolute]
      [0x94 4 2 ZeroPageX]]
-  ((setter mode) (get-register :yr)))
+  (setter mode (get-register :yr)))
 
 (defasm tax {:docs "Transfer Accumulator to X register"}
     [[0xaa 2 1 Implied]]
