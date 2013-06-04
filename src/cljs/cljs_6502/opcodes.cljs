@@ -1,5 +1,5 @@
 (ns cljs-6502.opcodes
-  (:refer-clojure :exclude [inc dec])
+  (:refer-clojure :exclude [and inc dec])
   (:use-macros [clj-6502.macros :only [defasm branch-if]])
   (:use [cljs-6502.addressing :only [Implied Immediate Accumulator
                                      ZeroPage ZeroPageX ZeroPageY
